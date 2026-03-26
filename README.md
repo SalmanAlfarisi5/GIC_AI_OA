@@ -21,33 +21,33 @@ PDF Document
     │
     ▼
 ┌─────────────────┐
-│  PDF Parser      │  PyMuPDF: text, headings, tables
-│  (Ingestion)     │  with page-level metadata
+│  PDF Parser     │  PyMuPDF: text, headings, tables
+│  (Ingestion)    │  with page-level metadata
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  Structure-Aware │  Heading-first grouping →
-│  Chunker         │  token-bounded with overlap
+│  Structure-Aware│  Heading-first grouping →
+│  Chunker        │  token-bounded with overlap
 └────────┬────────┘
          ▼
 ┌──────────────────────────┐
-│  Dual Index               │
-│  FAISS (dense) + BM25     │
-│  (sparse)                 │
+│  Dual Index              │
+│  FAISS (dense) + BM25    │
+│  (sparse)                │
 └────────┬─────────────────┘
          ▼
 ┌─────────────────┐
-│  RRF Fusion      │  Reciprocal Rank Fusion
+│  RRF Fusion     │  Reciprocal Rank Fusion
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  Cross-Encoder   │  Re-rank for precision
-│  Re-ranker       │
+│  Cross-Encoder  │  Re-rank for precision
+│  Re-ranker      │
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│  LLM Generator   │  Strict grounding prompt
-│  + Citations     │  with source attribution
+│  LLM Generator  │  Strict grounding prompt
+│  + Citations    │  with source attribution
 └─────────────────┘
 ```
 

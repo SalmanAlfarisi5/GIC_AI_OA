@@ -83,11 +83,6 @@ All results are written to `results.md` with per-document breakdowns and per-que
 pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken
 ```
 
-### Get Benchmark Data
-```bash
-git clone https://github.com/patronus-ai/financebench.git
-```
-
 ### Configure
 ```bash
 export OPENAI_API_KEY="sk-..."
@@ -131,7 +126,7 @@ result = ask("What was the total revenue?", single_index, CONFIG)
 ├── README.md                  # This file
 ├── results.md                 # Generated evaluation report
 ├── code_walkthrough.md        # Line-by-line code explanation
-└── financebench/              # Cloned benchmark repo
+└── financebench/              # FinanceBench-related files
     ├── pdfs/                  # Source PDFs
     └── data/
         └── financebench_open_source.jsonl  # QA pairs
@@ -152,8 +147,7 @@ Nothing in this system is finance-specific:
 - Embeddings are general-purpose
 - The generation prompt is domain-agnostic
 
-To specialize for a domain: fine-tune embeddings on domain data, add domain-specific
-preprocessing, or customize the prompt.
+To specialize for a domain: fine-tune embeddings on domain data, add domain-specific preprocessing, or customize the prompt.
 
 ## Future Improvements
 

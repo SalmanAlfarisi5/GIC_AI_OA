@@ -1,177 +1,124 @@
 # Document-Grounded Q&A System for Long Documents
 
-A retrieval-augmented generation (RAG) system that answers questions accurately from a single long document (100+ pages), with citation support and hallucination resistance.
+A RAG system that answers questions from a single long document (100+ pages)
+with citation support and hallucination resistance.
 
 ## Problem Framing
 
-I interpret this as a **document-grounded QA problem** over a single long source, where the core challenges are:
+This is a **document-grounded QA problem** where the core challenges are:
 
-1. **Retrieval quality** — finding the right passages in a 100+ page document
-2. **Citation fidelity** — every claim in the answer must be traceable to specific pages/sections
-3. **Hallucination control** — the system must refuse to answer rather than fabricate
+1. **Retrieval quality** — finding the right passages in a dense 100+ page document
+2. **Citation fidelity** — every claim must trace back to specific pages and sections
+3. **Hallucination control** — refuse to answer rather than fabricate
 
-Since we're working with a single document (not a large corpus), the difficulty is not scale but **precision**: correctly locating the most relevant parts of a long, dense text and generating answers strictly grounded in those parts.
+With only one document, the difficulty isn't scale — it's precision: locating the
+most relevant content and generating answers strictly grounded in that content.
 
-## System Design
-
-### Architecture
+## Architecture
 
 ```
-PDF Document
-    │
-    ▼
-┌─────────────────┐
-│  PDF Parser     │  PyMuPDF: text, headings, tables
-│  (Ingestion)    │  with page-level metadata
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│  Structure-Aware│  Heading-first grouping →
-│  Chunker        │  token-bounded with overlap
-└────────┬────────┘
-         ▼
-┌──────────────────────────┐
-│  Dual Index              │
-│  FAISS (dense) + BM25    │
-│  (sparse)                │
-└────────┬─────────────────┘
-         ▼
-┌─────────────────┐
-│  RRF Fusion     │  Reciprocal Rank Fusion
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│  Cross-Encoder  │  Re-rank for precision
-│  Re-ranker      │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│  LLM Generator  │  Strict grounding prompt
-│  + Citations    │  with source attribution
-└─────────────────┘
+PDF → PyMuPDF Parser → Section-Aware Chunker → [FAISS + BM25] → RRF Fusion → LLM + Citations
 ```
 
-### Major Design Choices
+The pipeline has six stages:
 
-| Component | Choice | Why | Alternatives Considered |
-|-----------|--------|-----|------------------------|
-| PDF Parser | PyMuPDF (fitz) | Fast, good structure extraction, built-in table support | pdfplumber (slower), unstructured (heavier), pdfminer (less structure) |
-| Chunking | Heading-aware + token overlap | Preserves topical coherence within sections | Recursive character splitting (heading-unaware), sentence-level (too granular), semantic chunking (slower) |
-| Embeddings | bge-base-en-v1.5 | Top retrieval quality in its size class (MTEB), 768-dim | all-MiniLM-L6 (faster/weaker), e5-large (better/slower) |
-| Vector Store | FAISS IndexFlatIP | Single document = small corpus; exact search is fine; no overhead | Chroma/Qdrant (overkill for single doc), HNSW (unnecessary for <10k vectors) |
-| Sparse Retrieval | BM25 (Okapi) | Essential for exact term matching (ticker symbols, accounting terms, specific numbers) | TF-IDF (weaker), SPLADE (better but heavier) |
-| Fusion | Reciprocal Rank Fusion (k=60) | Score-agnostic — no need to normalize incompatible score distributions | Linear combination (requires score normalization), learned fusion (needs training data) |
-| Re-ranking | cross-encoder/ms-marco-MiniLM-L-6 | Good accuracy/latency tradeoff for second-stage precision | Larger cross-encoders (slower), Cohere rerank API (external dependency) |
-| LLM | gpt-4o-mini | Cost-effective, strong instruction following for grounding | gpt-4o (higher quality/cost), Claude (equally capable, different API) |
-| Citations | Source numbering + page/section refs | Clear, verifiable, easy to trace back to document | Inline quotes (verbose), page-only (less precise) |
+1. **Ingestion** — PyMuPDF extracts text block-by-block with page numbers, detects headings via font-size heuristics, and extracts tables
+2. **Chunking** — Elements are grouped by section heading, then split into 512-token chunks with 64-token overlap to preserve context at boundaries
+3. **Dense Indexing (FAISS)** — Chunks are embedded with `bge-base-en-v1.5` and indexed for semantic similarity search
+4. **Sparse Indexing (BM25)** — Same chunks are tokenized for keyword matching — critical for exact terms, numbers, and acronyms
+5. **Hybrid Retrieval (RRF)** — Rankings from both retrievers are fused using Reciprocal Rank Fusion, which doesn't require score normalization
+6. **Generation** — Top passages are sent to `gpt-4o-mini` with a strict grounding prompt that enforces citations and allows refusal
+
+## Key Design Decisions
+
+| Decision | Choice | Why | Alternatives |
+|----------|--------|-----|-------------|
+| PDF Parser | PyMuPDF | Fast, structure-aware, table support | pdfplumber (slower), unstructured (heavier) |
+| Chunking | Heading-grouped + token overlap | Keeps topically related content together | Recursive char splitting (heading-unaware) |
+| Dense Embeddings | bge-base-en-v1.5 | Top retrieval quality in its size class | all-MiniLM-L6 (faster/weaker) |
+| Vector Store | FAISS flat | Single doc = small corpus; exact search is fine | Chroma (overkill here) |
+| Sparse Retrieval | BM25 | Exact term matching for numbers, acronyms | TF-IDF (weaker) |
+| Fusion | Reciprocal Rank Fusion | Score-agnostic, no normalization needed | Linear combination (requires normalization) |
+| LLM | gpt-4o-mini | Cost-effective, strong instruction following | gpt-4o (better/costlier) |
 
 ### Why Hybrid Retrieval?
 
-Dense and sparse retrieval have complementary strengths:
+Dense and sparse search have complementary strengths. Dense (FAISS) handles paraphrases
+("company revenue" ↔ "total sales") while sparse (BM25) handles exact matches ("GAAP", specific
+dollar amounts). Financial and technical documents need both. RRF combines their rankings cleanly.
 
-- **Dense (FAISS)**: Handles paraphrases and semantic similarity ("company revenue" ↔ "total sales")
-- **Sparse (BM25)**: Handles exact matches critical in technical documents ("GAAP", "10-K", specific numbers)
+## Setup
 
-For financial and technical documents, relying on either alone leaves gaps. RRF fusion combines them without needing score normalization.
-
-### Why Two-Stage Retrieval?
-
-First-stage retrieval (top-20 from each retriever) optimizes **recall** — cast a wide net. The cross-encoder re-ranker then optimizes **precision** — select the truly relevant passages. Cross-encoders are too slow for full-corpus search but excellent for re-scoring a small candidate set.
-
-## Setup Instructions
-
-### Prerequisites
-
+### Requirements
 - Python 3.9+
-- An OpenAI API key (for LLM generation and evaluation)
+- OpenAI API key
 
-### Installation
-
+### Install
 ```bash
-pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken tabulate
+pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken
 ```
 
-### Configuration
-
+### Configure
 ```bash
 export OPENAI_API_KEY="sk-..."
 ```
 
 ## How to Run
 
-### 1. Open the Notebook
+1. Open the notebook:
+   ```bash
+   jupyter notebook document_qa_system.ipynb
+   ```
 
-```bash
-jupyter notebook document_qa_system.ipynb
-```
+2. Set your PDF path in the notebook:
+   ```python
+   PDF_PATH = "/path/to/your/document.pdf"
+   ```
 
-### 2. Set Your Document Path
+3. Run cells sequentially (Sections 1–6 build the pipeline)
 
-In the notebook, update the `PDF_PATH` variable to point to your PDF:
+4. Ask questions:
+   ```python
+   result = ask("What was the total revenue?", index, CONFIG)
+   ```
 
-```python
-PDF_PATH = "/path/to/your/document.pdf"
-```
+5. Run evaluation (Section 8) to score answers on faithfulness, relevance, and citation quality
 
-### 3. Run All Cells
+## Evaluation
 
-Run cells sequentially. The pipeline will:
-1. Parse the PDF and extract structured content
-2. Create heading-aware chunks with metadata
-3. Build dual FAISS + BM25 indices
-4. Load the cross-encoder re-ranker
+The system includes an **LLM-as-judge** evaluation that scores answers on:
 
-### 4. Ask Questions
+- **Faithfulness** (1-5): Is every claim supported by the retrieved sources?
+- **Relevance** (1-5): Does the answer address the question?
+- **Citation Quality** (1-5): Are citations present, correct, and sufficient?
 
-Use the pipeline directly:
+This provides a scalable quality signal. For production, human evaluation would be more reliable.
 
-```python
-result = pipeline.ask("What was the total revenue?")
-```
+## Limitations
 
-Or start the interactive session:
+1. **Tables** — Simple tables extract well; complex merged cells may fail
+2. **Images/Charts** — Text-only; figures are ignored
+3. **Heading detection** — Font-size heuristic works for most documents, not all
+4. **Single document** — One document at a time by design
+5. **Evaluation** — LLM-as-judge has known biases; not a substitute for human review
 
-```python
-interactive_qa(pipeline)
-```
+## Domain Generalization
 
-### 5. Evaluate
+Nothing in this system is finance-specific:
+- Chunking is structure-based, not content-based
+- Embeddings are general-purpose
+- The generation prompt is domain-agnostic
 
-The evaluation section runs a battery of test questions and scores answers on faithfulness, relevance, and citation quality using LLM-as-judge.
-
-## Assumptions and Limitations
-
-### Assumptions
-- Input is a single PDF document (not scanned images — must have extractable text)
-- The document is in English
-- An OpenAI API key is available for generation (retrieval works offline)
-
-### Limitations
-
-1. **Tables**: PyMuPDF handles simple table layouts well but may struggle with complex merged cells. For production, Camelot or Tabula could serve as fallbacks.
-2. **Images/Charts**: Text-only extraction. Figures and charts are ignored. A multimodal approach (GPT-4V) would be needed to handle these.
-3. **Cross-document reasoning**: Not supported. Designed for single-document QA.
-4. **Heading detection**: Uses font-size heuristics, which work for most documents but may fail on unusual layouts. Using the PDF's outline/bookmark structure would be more robust.
-5. **Evaluation**: LLM-as-judge has known biases (e.g., preference for longer answers). Human evaluation would be more reliable for production assessment.
-
-### Domain Generalization
-
-The system is domain-agnostic by design:
-- No domain-specific rules, ontologies, or preprocessing
-- Structure-based chunking works across document types
-- General-purpose embeddings and prompts
-
-To specialize for a domain: fine-tune embeddings on domain data, add domain-specific preprocessing, or customize the generation prompt.
+To specialize for a domain: fine-tune embeddings on domain data, add domain-specific
+preprocessing, or customize the prompt.
 
 ## Future Improvements
 
-With more time, I would prioritize:
+With more time, in order of impact:
 
-1. **Iterative/agentic retrieval** — Let the LLM request additional context if the first retrieval is insufficient
-2. **Semantic chunking** — Use embedding similarity between sentences to find natural breakpoints instead of fixed token windows
-3. **Index caching** — Serialize FAISS index and embeddings to disk to avoid re-embedding on repeated use
-4. **Query decomposition** — Break complex multi-part questions into sub-questions
-5. **Confidence estimation** — Score answer reliability based on retrieval scores and source coverage
-6. **Multimodal support** — Process charts, figures, and images using vision models
-7. **Streaming** — Stream the LLM response for better UX
-8. **Better evaluation** — Use established benchmarks (e.g., FinanceBench) with gold-standard answers
+1. **Cross-encoder re-ranker** — Add a second-stage re-ranker (e.g., `ms-marco-MiniLM`) to improve precision after first-stage recall
+2. **Index caching** — Serialize FAISS index to disk so re-embedding isn't needed on restart
+3. **Iterative retrieval** — If first retrieval is weak, reformulate the query and search again
+4. **Semantic chunking** — Use embedding similarity to find natural topic boundaries
+5. **Query decomposition** — Break complex multi-part questions into sub-questions
+6. **Multimodal** — Process charts and images with a vision model

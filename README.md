@@ -11,7 +11,7 @@ This is a **document-grounded QA problem** where the core challenges are:
 2. **Citation fidelity** — every claim must trace back to specific pages and sections
 3. **Hallucination control** — refuse to answer rather than fabricate
 
-With only one document, the difficulty isn't scale — it's precision: locating the
+With only one document, the difficulty isn't scale, it's precision: locating the
 most relevant content and generating answers strictly grounded in that content.
 
 ## Architecture

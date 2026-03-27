@@ -1,7 +1,8 @@
 # Document-Grounded Q&A System for Long Documents
 
 A RAG system that answers questions from a single long document (100+ pages)
-with citation support and hallucination resistance.
+with citation support and hallucination resistance, evaluated against the
+[FinanceBench](https://github.com/patronus-ai/financebench) benchmark.
 
 ## Problem Framing
 
@@ -11,7 +12,7 @@ This is a **document-grounded QA problem** where the core challenges are:
 2. **Citation fidelity** — every claim must trace back to specific pages and sections
 3. **Hallucination control** — refuse to answer rather than fabricate
 
-With only one document, the difficulty isn't scale, it's precision: locating the
+With only one document, the difficulty isn't scale — it's precision: locating the
 most relevant content and generating answers strictly grounded in that content.
 
 ## Architecture
@@ -40,12 +41,36 @@ The pipeline has six stages:
 | Sparse Retrieval | BM25 | Exact term matching for numbers, acronyms | TF-IDF (weaker) |
 | Fusion | Reciprocal Rank Fusion | Score-agnostic, no normalization needed | Linear combination (requires normalization) |
 | LLM | gpt-4o-mini | Cost-effective, strong instruction following | gpt-4o (better/costlier) |
+| Benchmark | FinanceBench | Gold answers, multiple reasoning types | Manual QA (not reproducible) |
+| Adversarial Test | Nonsense questions | Tests refusal/abstention | Only testing answerable questions hides hallucination risk |
 
 ### Why Hybrid Retrieval?
 
 Dense and sparse search have complementary strengths. Dense (FAISS) handles paraphrases
 ("company revenue" ↔ "total sales") while sparse (BM25) handles exact matches ("GAAP", specific
 dollar amounts). Financial and technical documents need both. RRF combines their rankings cleanly.
+
+## Evaluation Strategy
+
+The system is evaluated automatically across **8-10 FinanceBench documents** on two types of questions:
+
+### Benchmark Questions (from FinanceBench)
+Each document has human-annotated questions with gold answers. We score:
+- **Faithfulness** (1-5): Is the answer grounded in the retrieved sources?
+- **Relevance** (1-5): Does it address the question?
+- **Citation Quality** (1-5): Are citations present and correct?
+- **Correctness** (1-5): Does it match the gold answer?
+
+### Adversarial Nonsense Questions
+Questions with no answer in any financial document (e.g., "What is the recipe for chocolate cake?"). A robust system should refuse to answer. We measure:
+- **Abstention Rate**: % of nonsense questions correctly refused (higher = better)
+
+### Why Both?
+A system that always answers sounds helpful but is dangerous. It will hallucinate when the answer
+isn't in the document. Testing with unanswerable questions reveals this failure mode. A good system
+should score high on correctness AND high on abstention rate.
+
+All results are written to `results.md` with per-document breakdowns and per-question details.
 
 ## Setup
 
@@ -58,6 +83,11 @@ dollar amounts). Financial and technical documents need both. RRF combines their
 pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken
 ```
 
+### Get Benchmark Data
+```bash
+git clone https://github.com/patronus-ai/financebench.git
+```
+
 ### Configure
 ```bash
 export OPENAI_API_KEY="sk-..."
@@ -65,34 +95,47 @@ export OPENAI_API_KEY="sk-..."
 
 ## How to Run
 
+### Full Benchmark (Automatic)
+
 1. Open the notebook:
    ```bash
    jupyter notebook document_qa_system.ipynb
    ```
 
-2. Set your PDF path in the notebook:
+2. Set paths in Section 11 to your FinanceBench clone:
    ```python
-   PDF_PATH = "/path/to/your/document.pdf"
+   CONFIG["pdf_dir"] = "./financebench/pdfs"
+   CONFIG["benchmark_file"] = "./financebench/data/financebench_open_source.jsonl"
    ```
 
-3. Run cells sequentially (Sections 1–6 build the pipeline)
+3. Run all cells. The system will:
+   - Select 8-10 documents with the most benchmark questions
+   - For each document: ingest, chunk, index, run all matching questions + 3 nonsense questions
+   - Evaluate every answer against gold standards
+   - Generate `results.md` with full breakdown
 
-4. Ask questions:
-   ```python
-   result = ask("What was the total revenue?", index, CONFIG)
-   ```
+### Single Document (Manual)
 
-5. Run evaluation (Section 8) to score answers on faithfulness, relevance, and citation quality
+Use Section 12 to query any PDF interactively:
+```python
+SINGLE_PDF = "/path/to/your/document.pdf"
+# ... run the cell, then:
+result = ask("What was the total revenue?", single_index, CONFIG)
+```
 
-## Evaluation
+## Project Structure
 
-The system includes an **LLM-as-judge** evaluation that scores answers on:
-
-- **Faithfulness** (1-5): Is every claim supported by the retrieved sources?
-- **Relevance** (1-5): Does the answer address the question?
-- **Citation Quality** (1-5): Are citations present, correct, and sufficient?
-
-This provides a scalable quality signal. For production, human evaluation would be more reliable.
+```
+.
+├── document_qa_system.ipynb   # Main notebook (all code)
+├── README.md                  # This file
+├── results.md                 # Generated evaluation report
+├── code_walkthrough.md        # Line-by-line code explanation
+└── financebench/              # Cloned benchmark repo
+    ├── pdfs/                  # Source PDFs
+    └── data/
+        └── financebench_open_source.jsonl  # QA pairs
+```
 
 ## Limitations
 
@@ -116,7 +159,7 @@ preprocessing, or customize the prompt.
 
 With more time, in order of impact:
 
-1. **Cross-encoder re-ranker** — Add a second-stage re-ranker (e.g., `ms-marco-MiniLM`) to improve precision after first-stage recall
+1. **Cross-encoder re-ranker** — Add a second-stage re-ranker (e.g., `ms-marco-MiniLM`) to improve precision
 2. **Index caching** — Serialize FAISS index to disk so re-embedding isn't needed on restart
 3. **Iterative retrieval** — If first retrieval is weak, reformulate the query and search again
 4. **Semantic chunking** — Use embedding similarity to find natural topic boundaries

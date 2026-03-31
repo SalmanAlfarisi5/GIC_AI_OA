@@ -42,7 +42,6 @@ The pipeline has six stages:
 | Fusion | Reciprocal Rank Fusion | Score-agnostic, no normalization needed | Linear combination (requires normalization) |
 | LLM | gpt-4o-mini | Cost-effective, strong instruction following | gpt-4o (better/costlier) |
 | Benchmark | FinanceBench | Gold answers, multiple reasoning types | Manual QA (not reproducible) |
-| Adversarial Test | Nonsense questions | Tests refusal/abstention | Only testing answerable questions hides hallucination risk |
 
 ### Why Hybrid Retrieval?
 
@@ -55,22 +54,19 @@ dollar amounts). Financial and technical documents need both. RRF combines their
 The system is evaluated automatically across **8-10 FinanceBench documents** on two types of questions:
 
 ### Benchmark Questions (from FinanceBench)
-Each document has human-annotated questions with gold answers. We score:
-- **Faithfulness** (1-5): Is the answer grounded in the retrieved sources?
-- **Relevance** (1-5): Does it address the question?
-- **Citation Quality** (1-5): Are citations present and correct?
-- **Correctness** (1-5): Does it match the gold answer?
+Each document has human-annotated questions with gold answers. Scored on:
+- **Faithfulness** (1-5): Grounded in retrieved sources?
+- **Relevance** (1-5): Answers the question?
+- **Citation Quality** (1-5): Proper `[Source N]` references?
+- **Correctness** (1-5): Matches gold answer?
 
 ### Adversarial Nonsense Questions
-Questions with no answer in any financial document (e.g., "What is the recipe for chocolate cake?"). A robust system should refuse to answer. We measure:
-- **Abstention Rate**: % of nonsense questions correctly refused (higher = better)
-
-### Why Both?
-A system that always answers sounds helpful but is dangerous. It will hallucinate when the answer
-isn't in the document. Testing with unanswerable questions reveals this failure mode. A good system
-should score high on correctness AND high on abstention rate.
+Questions with no answer in any financial document (e.g., "What is the recipe for chocolate cake?").
+A robust system should refuse to answer. Measured by **Abstention Rate** (higher = better).
 
 All results are written to `results.md` with per-document breakdowns and per-question details.
+
+---
 
 ## Setup
 
@@ -80,7 +76,14 @@ All results are written to `results.md` with per-document breakdowns and per-que
 
 ### Install
 ```bash
-pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken
+pip install -r requirements.txt
+```
+
+### Get Benchmark Data (for evaluation)
+```bash
+# Clone OUTSIDE this repo, not inside it
+cd ~
+git clone https://github.com/patronus-ai/financebench.git
 ```
 
 ### Configure
@@ -88,57 +91,70 @@ pip install pymupdf sentence-transformers faiss-cpu rank_bm25 openai tiktoken
 export OPENAI_API_KEY="sk-..."
 ```
 
+---
+
 ## How to Run
 
-### Full Benchmark (Automatic)
+### Option 1: Web Interface (Demo)
 
-1. Open the notebook:
-   ```bash
-   jupyter notebook document_qa_system.ipynb
-   ```
+A Flask web app for interactive single-document Q&A.
 
-2. Set paths in Section 11 to your FinanceBench clone:
-   ```python
-   CONFIG["pdf_dir"] = "./financebench/pdfs"
-   CONFIG["benchmark_file"] = "./financebench/data/financebench_open_source.jsonl"
-   ```
-
-3. Run all cells. The system will:
-   - Select 8-10 documents with the most benchmark questions
-   - For each document: ingest, chunk, index, run all matching questions + 3 nonsense questions
-   - Evaluate every answer against gold standards
-   - Generate `results.md` with full breakdown
-
-### Single Document (Manual)
-
-Use Section 12 to query any PDF interactively:
-```python
-SINGLE_PDF = "/path/to/your/document.pdf"
-# ... run the cell, then:
-result = ask("What was the total revenue?", single_index, CONFIG)
+```bash
+export OPENAI_API_KEY="sk-..."
+python app.py
 ```
+
+Then open **http://localhost:5000** in your browser. You can:
+1. Upload a PDF (drag & drop or click)
+2. Wait for processing (parsing, chunking, embedding)
+3. Ask questions and get grounded answers with citations
+
+### Option 2: Jupyter Notebook (Full Pipeline + Benchmark)
+
+```bash
+jupyter notebook document_qa_system.ipynb
+```
+
+**For the full FinanceBench benchmark:**
+1. Update paths in Section 11 to your FinanceBench clone:
+   ```python
+   CONFIG["pdf_dir"] = os.path.expanduser("~/financebench/pdfs")
+   CONFIG["benchmark_file"] = os.path.expanduser("~/financebench/data/financebench_open_source.jsonl")
+   ```
+2. Run all cells — the system will process 8-10 documents and generate `results.md`
+
+**For single-document testing:** Use Section 12 of the notebook.
+
+---
 
 ## Project Structure
 
 ```
 .
-├── document_qa_system.ipynb   # Main notebook (all code)
-├── README.md                  # This file
-├── results.md                 # Generated evaluation report
-├── code_walkthrough.md        # Line-by-line code explanation
-└── financebench/              # FinanceBench-related files
-    ├── pdfs/                  # Source PDFs
-    └── data/
-        └── financebench_open_source.jsonl  # QA pairs
+├── app.py                         # Flask web app (single document Q&A)
+├── templates/
+│   └── index.html                 # Web interface (dark theme)
+├── document_qa_system.ipynb       # Full pipeline + FinanceBench benchmark
+├── requirements.txt               # Python dependencies
+├── README.md                      # This file
+├── code_walkthrough.md            # Line-by-line code explanation (interview prep)
+└── results.md                     # Generated after running benchmark
 ```
 
-## Limitations
+The FinanceBench data (PDFs + questions) is **not included** in this repo.
+Clone it separately as described in Setup above.
 
-1. **Tables** — Simple tables extract well; complex merged cells may fail
-2. **Images/Charts** — Text-only; figures are ignored
-3. **Heading detection** — Font-size heuristic works for most documents, not all
-4. **Single document** — One document at a time by design
-5. **Evaluation** — LLM-as-judge has known biases; not a substitute for human review
+---
+
+## Assumptions & Limitations
+
+1. **PDF only** — The system currently only accepts PDF files. Other formats (DOCX, HTML, TXT) are not supported. PDFs must contain extractable text (not scanned images without OCR).
+2. **Tables** — Simple tables extract well; complex merged cells may fail
+3. **Images/Charts** — Text-only extraction; figures and charts are ignored
+4. **Heading detection** — Font-size heuristic works for most documents, not all
+5. **Single document** — One document at a time by design
+6. **Evaluation** — LLM-as-judge has known biases; not a substitute for human review
+7. **API dependency** — Requires OpenAI API key for answer generation (retrieval works offline)
 
 ## Domain Generalization
 
@@ -147,15 +163,17 @@ Nothing in this system is finance-specific:
 - Embeddings are general-purpose
 - The generation prompt is domain-agnostic
 
-To specialize for a domain: fine-tune embeddings on domain data, add domain-specific preprocessing, or customize the prompt.
+To specialize for a domain: fine-tune embeddings on domain data, add domain-specific
+preprocessing, or customize the prompt.
 
 ## Future Improvements
 
 With more time, in order of impact:
 
 1. **Cross-encoder re-ranker** — Add a second-stage re-ranker (e.g., `ms-marco-MiniLM`) to improve precision
-2. **Index caching** — Serialize FAISS index to disk so re-embedding isn't needed on restart
-3. **Iterative retrieval** — If first retrieval is weak, reformulate the query and search again
-4. **Semantic chunking** — Use embedding similarity to find natural topic boundaries
-5. **Query decomposition** — Break complex multi-part questions into sub-questions
-6. **Multimodal** — Process charts and images with a vision model
+2. **Multi-format support** — Accept DOCX, HTML, TXT, and scanned PDFs (via OCR)
+3. **Index caching** — Serialize FAISS index to disk so re-embedding isn't needed on restart
+4. **Iterative retrieval** — If first retrieval is weak, reformulate the query and search again
+5. **Semantic chunking** — Use embedding similarity to find natural topic boundaries
+6. **Query decomposition** — Break complex multi-part questions into sub-questions
+7. **Multimodal** — Process charts and images with a vision model

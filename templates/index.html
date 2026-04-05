@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Q&A</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16161f;
+            --bg-input: #1a1a25;
+            --bg-hover: #1e1e2a;
+            --border: #2a2a3a;
+            --border-focus: #4a4aff;
+            --text-primary: #e4e4ef;
+            --text-secondary: #8888a0;
+            --text-muted: #55556a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-dim: rgba(99, 102, 241, 0.15);
+            --success: #22c55e;
+            --success-dim: rgba(34, 197, 94, 0.12);
+            --error: #ef4444;
+            --error-dim: rgba(239, 68, 68, 0.12);
+            --warning: #f59e0b;
+            --cite-bg: rgba(99, 102, 241, 0.08);
+            --cite-border: rgba(99, 102, 241, 0.25);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Layout ────────────────────────────── */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* ── Header ────────────────────────────── */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .header h1 span {
+            color: var(--accent);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* ── Upload Area ───────────────────────── */
+        .upload-area {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 48px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: var(--bg-hover);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .upload-area.has-file {
+            border-style: solid;
+            border-color: var(--success);
+            background: var(--success-dim);
+            padding: 24px 32px;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .upload-area h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ── Document Info ─────────────────────── */
+        .doc-info {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 32px;
+        }
+
+        .doc-info.visible { display: block; }
+
+        .doc-info .doc-stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .doc-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat .val {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Question Input ────────────────────── */
+        .question-section {
+            margin-bottom: 32px;
+        }
+
+        .question-box {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .question-box input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .question-box input:focus {
+            border-color: var(--border-focus);
+        }
+
+        .question-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .question-box input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 14px 24px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Loading ───────────────────────────── */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: var(--text-secondary);
+        }
+
+        .loading.visible { display: block; }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Answer Card ───────────────────────── */
+        .answer-section {
+            display: none;
+        }
+
+        .answer-section.visible { display: block; }
+
+        .answer-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .answer-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .answer-header .label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--accent);
+        }
+
+        .answer-header .latency {
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .answer-body {
+            padding: 20px;
+            font-size: 15px;
+            line-height: 1.75;
+            white-space: pre-wrap;
+        }
+
+        /* ── Sources ───────────────────────────── */
+        .sources-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .sources-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+        }
+
+        .source-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        .source-item:last-child { border-bottom: none; }
+        .source-item:hover { background: var(--bg-hover); }
+
+        .source-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .source-badge {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--cite-border);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .source-citation {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .source-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ── Usage Stats ───────────────────────── */
+        .usage-bar {
+            display: flex;
+            gap: 16px;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── History ───────────────────────────── */
+        .history-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 32px 0;
+        }
+
+        /* ── Error ─────────────────────────────── */
+        .error-msg {
+            display: none;
+            background: var(--error-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            color: var(--error);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .error-msg.visible { display: block; }
+
+        /* ── Responsive ────────────────────────── */
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
+            .question-box { flex-direction: column; }
+            .doc-stats { flex-direction: column; gap: 8px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Document <span>Q&A</span></h1>
+            <p>Upload a PDF. Ask questions. Get grounded answers with citations.</p>
+        </div>
+
+        <!-- Upload -->
+        <div class="upload-area" id="uploadArea">
+            <div id="uploadPrompt">
+                <div class="upload-icon">📄</div>
+                <h3>Drop a PDF here or click to upload</h3>
+                <p>Supports PDF files up to 100MB</p>
+            </div>
+            <input type="file" id="fileInput" accept=".pdf">
+        </div>
+
+        <!-- Processing indicator -->
+        <div class="loading" id="uploadLoading">
+            <div class="spinner"></div>
+            <p>Processing document — parsing, chunking, embedding...</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- Doc info -->
+        <div class="doc-info" id="docInfo">
+            <div class="doc-stats">
+                <div class="stat">📄 <span class="val" id="statFilename">—</span></div>
+                <div class="stat">Pages: <span class="val" id="statPages">—</span></div>
+                <div class="stat">Chunks: <span class="val" id="statChunks">—</span></div>
+                <div class="stat">Indexed in: <span class="val" id="statTime">—</span></div>
+            </div>
+        </div>
+
+        <!-- Question input -->
+        <div class="question-section">
+            <div class="question-box">
+                <input type="text" id="questionInput" placeholder="Ask a question about the document..."
+                       disabled autocomplete="off">
+                <button class="btn" id="askBtn" disabled onclick="askQuestion()">Ask</button>
+            </div>
+        </div>
+
+        <!-- Loading answer -->
+        <div class="loading" id="answerLoading">
+            <div class="spinner"></div>
+            <p>Retrieving passages and generating answer...</p>
+        </div>
+
+        <!-- Results (newest first) -->
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadLoading = document.getElementById('uploadLoading');
+        const docInfo = document.getElementById('docInfo');
+        const questionInput = document.getElementById('questionInput');
+        const askBtn = document.getElementById('askBtn');
+        const answerLoading = document.getElementById('answerLoading');
+        const resultsDiv = document.getElementById('results');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // ── Drag & drop ──────────────────────────
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleUpload(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleUpload(e.target.files[0]);
+            }
+        });
+
+        // ── Upload handler ───────────────────────
+        async function handleUpload(file) {
+            if (!file.name.endsWith('.pdf')) {
+                showError('Only PDF files are supported.');
+                return;
+            }
+
+            hideError();
+            uploadArea.style.display = 'none';
+            uploadLoading.classList.add('visible');
+            docInfo.classList.remove('visible');
+            questionInput.disabled = true;
+            askBtn.disabled = true;
+            resultsDiv.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const resp = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                uploadLoading.classList.remove('visible');
+
+                if (data.error) {
+                    showError(data.error);
+                    uploadArea.style.display = 'block';
+                    return;
+                }
+
+                // Show doc info
+                document.getElementById('statFilename').textContent = data.filename;
+                document.getElementById('statPages').textContent = data.pages;
+                document.getElementById('statChunks').textContent = data.chunks;
+                document.getElementById('statTime').textContent = data.time + 's';
+                docInfo.classList.add('visible');
+
+                // Update upload area
+                uploadArea.style.display = 'block';
+                uploadArea.classList.add('has-file');
+                document.getElementById('uploadPrompt').innerHTML =
+                    `<h3>✅ ${data.filename}</h3>
+                     <p>${data.pages} pages · ${data.chunks} chunks · Drop another PDF to replace</p>`;
+
+                // Enable question input
+                questionInput.disabled = false;
+                askBtn.disabled = false;
+                questionInput.focus();
+
+            } catch (err) {
+                uploadLoading.classList.remove('visible');
+                uploadArea.style.display = 'block';
+                showError('Upload failed: ' + err.message);
+            }
+        }
+
+        // ── Ask question ─────────────────────────
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !askBtn.disabled) askQuestion();
+        });
+
+        async function askQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            hideError();
+            askBtn.disabled = true;
+            questionInput.disabled = true;
+            answerLoading.classList.add('visible');
+
+            try {
+                const resp = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question }),
+                });
+                const data = await resp.json();
+
+                answerLoading.classList.remove('visible');
+                askBtn.disabled = false;
+                questionInput.disabled = false;
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                renderResult(data);
+                questionInput.value = '';
+                questionInput.focus();
+
+            } catch (err) {
+                answerLoading.classList.remove('visible');
+                askBtn.disabled = false;
+                questionInput.disabled = false;
+                showError('Request failed: ' + err.message);
+            }
+        }
+
+        // ── Render result ────────────────────────
+        function renderResult(data) {
+            const wrapper = document.createElement('div');
+
+            // Add divider if not first result
+            if (resultsDiv.children.length > 0) {
+                wrapper.innerHTML += '<hr class="history-divider">';
+            }
+
+            // Question echo
+            wrapper.innerHTML += `
+                <div style="margin-bottom: 12px; color: var(--text-secondary); font-size: 14px;">
+                    <strong style="color: var(--text-primary);">Q:</strong> ${escapeHtml(data.question)}
+                </div>`;
+
+            // Answer card
+            wrapper.innerHTML += `
+                <div class="answer-card">
+                    <div class="answer-header">
+                        <span class="label">Answer</span>
+                        <span class="latency">${data.latency}s</span>
+                    </div>
+                    <div class="answer-body">${escapeHtml(data.answer)}</div>
+                </div>`;
+
+            // Sources
+            let sourcesHtml = `
+                <div class="sources-card">
+                    <div class="sources-header">Sources (${data.sources.length} passages)</div>`;
+
+            data.sources.forEach(s => {
+                sourcesHtml += `
+                    <div class="source-item">
+                        <div class="source-meta">
+                            <span class="source-badge">Source ${s.source_num}</span>
+                            <span class="source-citation">${escapeHtml(s.citation)}</span>
+                        </div>
+                        <div class="source-text">${escapeHtml(s.text)}</div>
+                    </div>`;
+            });
+            sourcesHtml += '</div>';
+            wrapper.innerHTML += sourcesHtml;
+
+            // Usage
+            wrapper.innerHTML += `
+                <div class="usage-bar">
+                    <span>Prompt: ${data.usage.prompt_tokens} tokens</span>
+                    <span>Completion: ${data.usage.completion_tokens} tokens</span>
+                </div>`;
+
+            // Insert at top (newest first)
+            resultsDiv.prepend(wrapper);
+        }
+
+        // ── Helpers ──────────────────────────────
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('visible');
+        }
+
+        function hideError() {
+            errorMsg.classList.remove('visible');
+        }
+    </script>
+</body>
+</html>

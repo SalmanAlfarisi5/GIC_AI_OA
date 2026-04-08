@@ -24,15 +24,13 @@
             --success-dim: rgba(34, 197, 94, 0.12);
             --error: #ef4444;
             --error-dim: rgba(239, 68, 68, 0.12);
-            --warning: #f59e0b;
-            --cite-bg: rgba(99, 102, 241, 0.08);
-            --cite-border: rgba(99, 102, 241, 0.25);
+            --image-accent: #f59e0b;
+            --image-dim: rgba(245, 158, 11, 0.12);
+            --image-border: rgba(245, 158, 11, 0.3);
             --radius: 10px;
             --radius-sm: 6px;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--bg-primary);
@@ -40,340 +38,144 @@
             min-height: 100vh;
             line-height: 1.6;
         }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
 
-        /* ── Layout ────────────────────────────── */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 24px;
+        /* Header */
+        .header { text-align: center; margin-bottom: 48px; }
+        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+        .header h1 span { color: var(--accent); }
+        .header p { color: var(--text-secondary); font-size: 15px; }
+        .header .tag {
+            display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--image-accent); background: var(--image-dim);
+            border: 1px solid var(--image-border); padding: 3px 10px;
+            border-radius: 20px;
         }
 
-        /* ── Header ────────────────────────────── */
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 8px;
-        }
-
-        .header h1 span {
-            color: var(--accent);
-        }
-
-        .header p {
-            color: var(--text-secondary);
-            font-size: 15px;
-        }
-
-        /* ── Upload Area ───────────────────────── */
+        /* Upload */
         .upload-area {
-            background: var(--bg-card);
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 48px 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 32px;
-            position: relative;
+            background: var(--bg-card); border: 2px dashed var(--border);
+            border-radius: var(--radius); padding: 48px 32px; text-align: center;
+            cursor: pointer; transition: all 0.2s; margin-bottom: 32px; position: relative;
         }
-
-        .upload-area:hover {
-            border-color: var(--accent);
-            background: var(--bg-hover);
-        }
-
-        .upload-area.dragover {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-        }
-
+        .upload-area:hover { border-color: var(--accent); background: var(--bg-hover); }
+        .upload-area.dragover { border-color: var(--accent); background: var(--accent-dim); }
         .upload-area.has-file {
-            border-style: solid;
-            border-color: var(--success);
-            background: var(--success-dim);
-            padding: 24px 32px;
+            border-style: solid; border-color: var(--success);
+            background: var(--success-dim); padding: 24px 32px;
         }
+        .upload-icon { font-size: 40px; margin-bottom: 12px; }
+        .upload-area h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .upload-area p { color: var(--text-secondary); font-size: 13px; }
+        .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-        .upload-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-        }
-
-        .upload-area h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .upload-area p {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .upload-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* ── Document Info ─────────────────────── */
+        /* Doc info */
         .doc-info {
-            display: none;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            margin-bottom: 32px;
+            display: none; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px 20px; margin-bottom: 32px;
         }
-
         .doc-info.visible { display: block; }
+        .doc-info .doc-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .doc-stats .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+        .stat .val { color: var(--text-primary); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
-        .doc-info .doc-stats {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .doc-stats .stat {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .stat .val {
-            color: var(--text-primary);
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* ── Question Input ────────────────────── */
-        .question-section {
-            margin-bottom: 32px;
-        }
-
-        .question-box {
-            display: flex;
-            gap: 10px;
-            align-items: stretch;
-        }
-
+        /* Question */
+        .question-section { margin-bottom: 32px; }
+        .question-box { display: flex; gap: 10px; }
         .question-box input {
-            flex: 1;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            color: var(--text-primary);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
+            flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 14px 18px; color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s;
         }
-
-        .question-box input:focus {
-            border-color: var(--border-focus);
-        }
-
-        .question-box input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .question-box input:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
+        .question-box input:focus { border-color: var(--border-focus); }
+        .question-box input::placeholder { color: var(--text-muted); }
+        .question-box input:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            padding: 14px 24px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            white-space: nowrap;
+            background: var(--accent); color: white; border: none; border-radius: var(--radius);
+            padding: 14px 24px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
+        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        .btn:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-        }
-
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ── Loading ───────────────────────────── */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 32px;
-            color: var(--text-secondary);
-        }
-
+        /* Loading */
+        .loading { display: none; text-align: center; padding: 32px; color: var(--text-secondary); }
         .loading.visible { display: block; }
-
         .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
+            width: 32px; height: 32px; border: 3px solid var(--border);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 12px;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Answer Card ───────────────────────── */
-        .answer-section {
-            display: none;
-        }
-
+        /* Answer */
+        .answer-section { display: none; }
         .answer-section.visible { display: block; }
-
         .answer-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
         }
-
         .answer-header {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 14px 20px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
-
         .answer-header .label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--accent);
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--accent);
         }
-
         .answer-header .latency {
-            font-size: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-muted);
+            font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);
         }
+        .answer-body { padding: 20px; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
 
-        .answer-body {
-            padding: 20px;
-            font-size: 15px;
-            line-height: 1.75;
-            white-space: pre-wrap;
-        }
-
-        /* ── Sources ───────────────────────────── */
+        /* Sources */
         .sources-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 20px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 20px;
         }
-
         .sources-header {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--text-secondary);
+            padding: 14px 20px; border-bottom: 1px solid var(--border);
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-secondary);
         }
-
         .source-item {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
-            transition: background 0.15s;
+            padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.15s;
         }
-
         .source-item:last-child { border-bottom: none; }
         .source-item:hover { background: var(--bg-hover); }
-
+        .source-item.image-source { border-left: 3px solid var(--image-accent); }
         .source-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
         }
-
         .source-badge {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--cite-border);
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            background: var(--accent-dim); color: var(--accent);
+            border: 1px solid rgba(99,102,241,0.25); padding: 2px 10px;
+            border-radius: 20px; font-size: 12px; font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
         }
-
+        .source-badge.image-badge {
+            background: var(--image-dim); color: var(--image-accent);
+            border-color: var(--image-border);
+        }
         .source-citation {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
         }
+        .source-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
 
-        .source-text {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ── Usage Stats ───────────────────────── */
+        /* Usage */
         .usage-bar {
-            display: flex;
-            gap: 16px;
-            padding: 12px 20px;
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            font-size: 12px;
-            color: var(--text-muted);
+            display: flex; gap: 16px; padding: 12px 20px; background: var(--bg-secondary);
+            border-radius: var(--radius); font-size: 12px; color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
         }
-
-        /* ── History ───────────────────────────── */
-        .history-divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 32px 0;
-        }
-
-        /* ── Error ─────────────────────────────── */
+        .history-divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
         .error-msg {
-            display: none;
-            background: var(--error-dim);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: var(--radius);
-            padding: 14px 20px;
-            color: var(--error);
-            font-size: 14px;
-            margin-bottom: 20px;
+            display: none; background: var(--error-dim); border: 1px solid rgba(239,68,68,0.3);
+            border-radius: var(--radius); padding: 14px 20px; color: var(--error);
+            font-size: 14px; margin-bottom: 20px;
         }
-
         .error-msg.visible { display: block; }
-
-        /* ── Responsive ────────────────────────── */
         @media (max-width: 600px) {
             .container { padding: 24px 16px; }
             .question-box { flex-direction: column; }
@@ -383,57 +185,50 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1>Document <span>Q&A</span></h1>
             <p>Upload a PDF. Ask questions. Get grounded answers with citations.</p>
+            <div class="tag">✨ Multimodal — images in PDFs are extracted and captioned</div>
         </div>
 
-        <!-- Upload -->
         <div class="upload-area" id="uploadArea">
             <div id="uploadPrompt">
                 <div class="upload-icon">📄</div>
                 <h3>Drop a PDF here or click to upload</h3>
-                <p>Supports PDF files up to 100MB</p>
+                <p>PDF files up to 100MB · Images will be extracted and analyzed</p>
             </div>
             <input type="file" id="fileInput" accept=".pdf">
         </div>
 
-        <!-- Processing indicator -->
         <div class="loading" id="uploadLoading">
             <div class="spinner"></div>
-            <p>Processing document — parsing, chunking, embedding...</p>
+            <p>Processing — parsing text, extracting images, embedding chunks...</p>
         </div>
 
-        <!-- Error -->
         <div class="error-msg" id="errorMsg"></div>
 
-        <!-- Doc info -->
         <div class="doc-info" id="docInfo">
             <div class="doc-stats">
                 <div class="stat">📄 <span class="val" id="statFilename">—</span></div>
                 <div class="stat">Pages: <span class="val" id="statPages">—</span></div>
                 <div class="stat">Chunks: <span class="val" id="statChunks">—</span></div>
-                <div class="stat">Indexed in: <span class="val" id="statTime">—</span></div>
+                <div class="stat">🖼️ Images: <span class="val" id="statImages">—</span></div>
+                <div class="stat">⏱️ <span class="val" id="statTime">—</span></div>
             </div>
         </div>
 
-        <!-- Question input -->
         <div class="question-section">
             <div class="question-box">
-                <input type="text" id="questionInput" placeholder="Ask a question about the document..."
-                       disabled autocomplete="off">
+                <input type="text" id="questionInput" placeholder="Ask a question about the document..." disabled autocomplete="off">
                 <button class="btn" id="askBtn" disabled onclick="askQuestion()">Ask</button>
             </div>
         </div>
 
-        <!-- Loading answer -->
         <div class="loading" id="answerLoading">
             <div class="spinner"></div>
             <p>Retrieving passages and generating answer...</p>
         </div>
 
-        <!-- Results (newest first) -->
         <div id="results"></div>
     </div>
 
@@ -448,77 +243,45 @@
         const resultsDiv = document.getElementById('results');
         const errorMsg = document.getElementById('errorMsg');
 
-        // ── Drag & drop ──────────────────────────
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault(); uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleUpload(e.dataTransfer.files[0]); }
         });
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                handleUpload(e.dataTransfer.files[0]);
-            }
-        });
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleUpload(e.target.files[0]);
-            }
-        });
+        fileInput.addEventListener('change', e => { if (e.target.files.length) handleUpload(e.target.files[0]); });
 
-        // ── Upload handler ───────────────────────
         async function handleUpload(file) {
-            if (!file.name.endsWith('.pdf')) {
-                showError('Only PDF files are supported.');
-                return;
-            }
-
+            if (!file.name.endsWith('.pdf')) { showError('Only PDF files are supported.'); return; }
             hideError();
             uploadArea.style.display = 'none';
             uploadLoading.classList.add('visible');
             docInfo.classList.remove('visible');
-            questionInput.disabled = true;
-            askBtn.disabled = true;
+            questionInput.disabled = true; askBtn.disabled = true;
             resultsDiv.innerHTML = '';
 
-            const formData = new FormData();
-            formData.append('file', file);
-
+            const fd = new FormData(); fd.append('file', file);
             try {
-                const resp = await fetch('/upload', { method: 'POST', body: formData });
+                const resp = await fetch('/upload', { method: 'POST', body: fd });
                 const data = await resp.json();
-
                 uploadLoading.classList.remove('visible');
+                if (data.error) { showError(data.error); uploadArea.style.display = 'block'; return; }
 
-                if (data.error) {
-                    showError(data.error);
-                    uploadArea.style.display = 'block';
-                    return;
-                }
-
-                // Show doc info
                 document.getElementById('statFilename').textContent = data.filename;
                 document.getElementById('statPages').textContent = data.pages;
                 document.getElementById('statChunks').textContent = data.chunks;
+                document.getElementById('statImages').textContent = data.images;
                 document.getElementById('statTime').textContent = data.time + 's';
                 docInfo.classList.add('visible');
 
-                // Update upload area
                 uploadArea.style.display = 'block';
                 uploadArea.classList.add('has-file');
+                const imgNote = data.images > 0 ? ` · ${data.images} images captioned` : '';
                 document.getElementById('uploadPrompt').innerHTML =
-                    `<h3>✅ ${data.filename}</h3>
-                     <p>${data.pages} pages · ${data.chunks} chunks · Drop another PDF to replace</p>`;
+                    `<h3>✅ ${data.filename}</h3><p>${data.pages} pages · ${data.chunks} chunks${imgNote} · Drop another PDF to replace</p>`;
 
-                // Enable question input
-                questionInput.disabled = false;
-                askBtn.disabled = false;
+                questionInput.disabled = false; askBtn.disabled = false;
                 questionInput.focus();
-
             } catch (err) {
                 uploadLoading.classList.remove('visible');
                 uploadArea.style.display = 'block';
@@ -526,118 +289,65 @@
             }
         }
 
-        // ── Ask question ─────────────────────────
-        questionInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !askBtn.disabled) askQuestion();
-        });
+        questionInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !askBtn.disabled) askQuestion(); });
 
         async function askQuestion() {
-            const question = questionInput.value.trim();
-            if (!question) return;
-
-            hideError();
-            askBtn.disabled = true;
-            questionInput.disabled = true;
+            const q = questionInput.value.trim();
+            if (!q) return;
+            hideError(); askBtn.disabled = true; questionInput.disabled = true;
             answerLoading.classList.add('visible');
-
             try {
                 const resp = await fetch('/ask', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question }),
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: q }),
                 });
                 const data = await resp.json();
-
                 answerLoading.classList.remove('visible');
-                askBtn.disabled = false;
-                questionInput.disabled = false;
-
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-
+                askBtn.disabled = false; questionInput.disabled = false;
+                if (data.error) { showError(data.error); return; }
                 renderResult(data);
-                questionInput.value = '';
-                questionInput.focus();
-
+                questionInput.value = ''; questionInput.focus();
             } catch (err) {
                 answerLoading.classList.remove('visible');
-                askBtn.disabled = false;
-                questionInput.disabled = false;
+                askBtn.disabled = false; questionInput.disabled = false;
                 showError('Request failed: ' + err.message);
             }
         }
 
-        // ── Render result ────────────────────────
         function renderResult(data) {
-            const wrapper = document.createElement('div');
+            const w = document.createElement('div');
+            if (resultsDiv.children.length > 0) w.innerHTML += '<hr class="history-divider">';
 
-            // Add divider if not first result
-            if (resultsDiv.children.length > 0) {
-                wrapper.innerHTML += '<hr class="history-divider">';
-            }
+            w.innerHTML += `<div style="margin-bottom:12px;color:var(--text-secondary);font-size:14px">
+                <strong style="color:var(--text-primary)">Q:</strong> ${esc(data.question)}</div>`;
 
-            // Question echo
-            wrapper.innerHTML += `
-                <div style="margin-bottom: 12px; color: var(--text-secondary); font-size: 14px;">
-                    <strong style="color: var(--text-primary);">Q:</strong> ${escapeHtml(data.question)}
-                </div>`;
+            w.innerHTML += `<div class="answer-card">
+                <div class="answer-header"><span class="label">Answer</span><span class="latency">${data.latency}s</span></div>
+                <div class="answer-body">${esc(data.answer)}</div></div>`;
 
-            // Answer card
-            wrapper.innerHTML += `
-                <div class="answer-card">
-                    <div class="answer-header">
-                        <span class="label">Answer</span>
-                        <span class="latency">${data.latency}s</span>
-                    </div>
-                    <div class="answer-body">${escapeHtml(data.answer)}</div>
-                </div>`;
-
-            // Sources
-            let sourcesHtml = `
-                <div class="sources-card">
-                    <div class="sources-header">Sources (${data.sources.length} passages)</div>`;
-
+            let sh = `<div class="sources-card"><div class="sources-header">Sources (${data.sources.length} passages)</div>`;
             data.sources.forEach(s => {
-                sourcesHtml += `
-                    <div class="source-item">
-                        <div class="source-meta">
-                            <span class="source-badge">Source ${s.source_num}</span>
-                            <span class="source-citation">${escapeHtml(s.citation)}</span>
-                        </div>
-                        <div class="source-text">${escapeHtml(s.text)}</div>
-                    </div>`;
+                const isImg = s.has_image;
+                sh += `<div class="source-item${isImg ? ' image-source' : ''}">
+                    <div class="source-meta">
+                        <span class="source-badge${isImg ? ' image-badge' : ''}">${isImg ? '🖼️ ' : ''}Source ${s.source_num}</span>
+                        <span class="source-citation">${esc(s.citation)}</span>
+                    </div>
+                    <div class="source-text">${esc(s.text)}</div></div>`;
             });
-            sourcesHtml += '</div>';
-            wrapper.innerHTML += sourcesHtml;
+            sh += '</div>';
+            w.innerHTML += sh;
 
-            // Usage
-            wrapper.innerHTML += `
-                <div class="usage-bar">
-                    <span>Prompt: ${data.usage.prompt_tokens} tokens</span>
-                    <span>Completion: ${data.usage.completion_tokens} tokens</span>
-                </div>`;
+            w.innerHTML += `<div class="usage-bar">
+                <span>Prompt: ${data.usage.prompt_tokens} tokens</span>
+                <span>Completion: ${data.usage.completion_tokens} tokens</span></div>`;
 
-            // Insert at top (newest first)
-            resultsDiv.prepend(wrapper);
+            resultsDiv.prepend(w);
         }
 
-        // ── Helpers ──────────────────────────────
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        function showError(msg) {
-            errorMsg.textContent = msg;
-            errorMsg.classList.add('visible');
-        }
-
-        function hideError() {
-            errorMsg.classList.remove('visible');
-        }
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function showError(m) { errorMsg.textContent = m; errorMsg.classList.add('visible'); }
+        function hideError() { errorMsg.classList.remove('visible'); }
     </script>
 </body>
 </html>

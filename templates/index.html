@@ -7,37 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:opsz@9..40;wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{
-            --bg:#09090b;--bg2:#111113;--card:#161618;--input:#1b1b1f;
-            --hover:#1f1f25;--border:#27272a;--border-focus:#6366f1;
-            --text:#fafafa;--text2:#a1a1aa;--muted:#52525b;
-            --accent:#6366f1;--accent2:#818cf8;--accent-bg:rgba(99,102,241,.1);
-            --green:#22c55e;--green-bg:rgba(34,197,94,.08);
-            --red:#ef4444;--red-bg:rgba(239,68,68,.08);
-            --amber:#f59e0b;--amber-bg:rgba(245,158,11,.08);--amber-border:rgba(245,158,11,.25);
-            --r:8px;
-        }
+        :root{--bg:#09090b;--bg2:#111113;--card:#161618;--input:#1b1b1f;--hover:#1f1f25;--border:#27272a;--border-focus:#6366f1;--text:#fafafa;--text2:#a1a1aa;--muted:#52525b;--accent:#6366f1;--accent2:#818cf8;--accent-bg:rgba(99,102,241,.1);--green:#22c55e;--green-bg:rgba(34,197,94,.08);--red:#ef4444;--red-bg:rgba(239,68,68,.08);--amber:#f59e0b;--amber-bg:rgba(245,158,11,.08);--amber-border:rgba(245,158,11,.25);--r:8px}
         body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
         .wrap{max-width:860px;margin:0 auto;padding:48px 20px}
-
-        /* Header */
         .hdr{text-align:center;margin-bottom:48px}
         .hdr h1{font-size:32px;font-weight:700;letter-spacing:-.5px}
         .hdr h1 em{font-style:normal;color:var(--accent)}
         .hdr p{color:var(--text2);font-size:14px;margin-top:6px}
         .formats{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
-        .formats span{
-            font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-            padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text2);
-        }
-        .formats span.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
-
-        /* Upload */
-        .drop{
-            background:var(--card);border:2px dashed var(--border);border-radius:var(--r);
-            padding:44px 28px;text-align:center;cursor:pointer;transition:all .2s;
-            margin-bottom:28px;position:relative;
-        }
+        .formats span{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);background:var(--accent-bg)}
+        .drop{background:var(--card);border:2px dashed var(--border);border-radius:var(--r);padding:44px 28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:28px;position:relative}
         .drop:hover{border-color:var(--accent);background:var(--hover)}
         .drop.over{border-color:var(--accent);background:var(--accent-bg)}
         .drop.done{border-style:solid;border-color:var(--green);background:var(--green-bg);padding:20px 28px}
@@ -45,85 +24,43 @@
         .drop p{color:var(--text2);font-size:13px}
         .drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
         .ico{font-size:36px;margin-bottom:8px}
-
-        /* Doc info */
         .info{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:28px}
         .info.on{display:flex;gap:20px;flex-wrap:wrap}
         .info .s{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px}
         .info .v{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
-
-        /* Input */
         .qbox{display:flex;gap:8px;margin-bottom:28px}
-        .qbox input{
-            flex:1;background:var(--input);border:1px solid var(--border);border-radius:var(--r);
-            padding:12px 16px;color:var(--text);font-family:inherit;font-size:14px;outline:none;
-            transition:border-color .15s;
-        }
+        .qbox input{flex:1;background:var(--input);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s}
         .qbox input:focus{border-color:var(--border-focus)}
         .qbox input::placeholder{color:var(--muted)}
         .qbox input:disabled{opacity:.35;cursor:not-allowed}
-        .btn{
-            background:var(--accent);color:#fff;border:none;border-radius:var(--r);
-            padding:12px 22px;font-family:inherit;font-size:13px;font-weight:600;
-            cursor:pointer;transition:all .15s;white-space:nowrap;
-        }
+        .btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px 22px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
         .btn:hover:not(:disabled){background:var(--accent2);transform:translateY(-1px)}
         .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
-
-        /* Loading */
         .ld{display:none;text-align:center;padding:28px;color:var(--text2);font-size:14px}
         .ld.on{display:block}
-        .spin{
-            width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);
-            border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px;
-        }
+        .spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
         @keyframes sp{to{transform:rotate(360deg)}}
-
-        /* Answer */
         .acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
-        .acard .top{
-            padding:10px 16px;border-bottom:1px solid var(--border);
-            display:flex;justify-content:space-between;align-items:center;
-        }
+        .acard .top{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
         .acard .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--accent)}
         .acard .lat{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
         .acard .body{padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap}
-
-        /* Sources */
         .scard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px}
-        .scard .shdr{
-            padding:10px 16px;border-bottom:1px solid var(--border);
-            font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);
-        }
+        .scard .shdr{padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2)}
         .si{padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s}
         .si:last-child{border-bottom:none}
         .si:hover{background:var(--hover)}
         .si.img{border-left:3px solid var(--amber)}
         .si .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-        .badge{
-            font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;
-            padding:2px 8px;border-radius:12px;
-            background:var(--accent-bg);color:var(--accent);border:1px solid rgba(99,102,241,.2);
-        }
+        .badge{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:12px;background:var(--accent-bg);color:var(--accent);border:1px solid rgba(99,102,241,.2)}
         .badge.ib{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
         .si .cite{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
         .si .stxt{font-size:12px;color:var(--text2);line-height:1.6}
-
-        /* Usage */
-        .usage{
-            display:flex;gap:14px;padding:10px 16px;background:var(--bg2);border-radius:var(--r);
-            font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;
-        }
-
+        .usage{display:flex;gap:14px;padding:10px 16px;background:var(--bg2);border-radius:var(--r);font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
         .divider{border:none;border-top:1px solid var(--border);margin:28px 0}
         .err{display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:12px 16px;color:var(--red);font-size:13px;margin-bottom:16px}
         .err.on{display:block}
-
-        @media(max-width:600px){
-            .wrap{padding:28px 14px}
-            .qbox{flex-direction:column}
-            .info.on{flex-direction:column;gap:8px}
-        }
+        @media(max-width:600px){.wrap{padding:28px 14px}.qbox{flex-direction:column}.info.on{flex-direction:column;gap:8px}}
     </style>
 </head>
 <body>
@@ -131,26 +68,14 @@
     <div class="hdr">
         <h1>Document <em>Q&A</em></h1>
         <p>Upload a document. Ask questions. Get grounded answers with citations.</p>
-        <div class="formats">
-            <span class="active">PDF</span>
-            <span class="active">DOCX</span>
-            <span class="active">TXT</span>
-            <span class="active">Markdown</span>
-        </div>
+        <div class="formats"><span>PDF</span><span>DOCX</span><span>TXT</span><span>Markdown</span></div>
     </div>
-
     <div class="drop" id="drop">
-        <div id="dropText">
-            <div class="ico">📄</div>
-            <h3>Drop a file here or click to upload</h3>
-            <p>PDF, DOCX, TXT, or Markdown — up to 100 MB</p>
-        </div>
+        <div id="dropText"><div class="ico">📄</div><h3>Drop a file here or click to upload</h3><p>PDF, DOCX, TXT, or Markdown — up to 100 MB · Images extracted from PDF &amp; DOCX</p></div>
         <input type="file" id="fi" accept=".pdf,.docx,.txt,.md">
     </div>
-
     <div class="ld" id="uld"><div class="spin"></div><p>Processing document...</p></div>
     <div class="err" id="err"></div>
-
     <div class="info" id="info">
         <div class="s">📄 <span class="v" id="sF">—</span></div>
         <div class="s">Type: <span class="v" id="sT">—</span></div>
@@ -159,83 +84,48 @@
         <div class="s">🖼️ <span class="v" id="sI">—</span></div>
         <div class="s">⏱️ <span class="v" id="sTm">—</span></div>
     </div>
-
     <div class="qbox">
         <input type="text" id="qi" placeholder="Ask a question about the document..." disabled autocomplete="off">
         <button class="btn" id="ab" disabled onclick="doAsk()">Ask</button>
     </div>
-
     <div class="ld" id="ald"><div class="spin"></div><p>Retrieving and generating answer...</p></div>
     <div id="res"></div>
 </div>
-
 <script>
-const drop=document.getElementById('drop'),fi=document.getElementById('fi'),
-      uld=document.getElementById('uld'),info=document.getElementById('info'),
-      qi=document.getElementById('qi'),ab=document.getElementById('ab'),
-      ald=document.getElementById('ald'),res=document.getElementById('res'),
-      err=document.getElementById('err');
-
+const drop=document.getElementById('drop'),fi=document.getElementById('fi'),uld=document.getElementById('uld'),info=document.getElementById('info'),qi=document.getElementById('qi'),ab=document.getElementById('ab'),ald=document.getElementById('ald'),res=document.getElementById('res'),err=document.getElementById('err');
 drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
 drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
-drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');
-    if(e.dataTransfer.files.length){fi.files=e.dataTransfer.files;doUpload(e.dataTransfer.files[0])}});
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files.length){fi.files=e.dataTransfer.files;doUpload(e.dataTransfer.files[0])}});
 fi.addEventListener('change',e=>{if(e.target.files.length)doUpload(e.target.files[0])});
-
 async function doUpload(f){
     const ok=['.pdf','.docx','.txt','.md'];
-    if(!ok.some(e=>f.name.toLowerCase().endsWith(e))){showErr('Unsupported format. Use PDF, DOCX, TXT, or MD.');return}
-    hideErr();drop.style.display='none';uld.classList.add('on');
-    info.classList.remove('on');qi.disabled=true;ab.disabled=true;res.innerHTML='';
+    if(!ok.some(e=>f.name.toLowerCase().endsWith(e))){showErr('Unsupported format.');return}
+    hideErr();drop.style.display='none';uld.classList.add('on');info.classList.remove('on');qi.disabled=true;ab.disabled=true;res.innerHTML='';
     const fd=new FormData();fd.append('file',f);
-    try{
-        const r=await fetch('/upload',{method:'POST',body:fd}),d=await r.json();
-        uld.classList.remove('on');
+    try{const r=await fetch('/upload',{method:'POST',body:fd}),d=await r.json();uld.classList.remove('on');
         if(d.error){showErr(d.error);drop.style.display='block';return}
-        document.getElementById('sF').textContent=d.filename;
-        document.getElementById('sT').textContent=d.file_type.toUpperCase();
-        document.getElementById('sP').textContent=d.pages;
-        document.getElementById('sC').textContent=d.chunks;
-        document.getElementById('sI').textContent=d.images+' images';
-        document.getElementById('sTm').textContent=d.time+'s';
-        info.classList.add('on');
-        drop.style.display='block';drop.classList.add('done');
+        document.getElementById('sF').textContent=d.filename;document.getElementById('sT').textContent=d.file_type.toUpperCase();
+        document.getElementById('sP').textContent=d.pages;document.getElementById('sC').textContent=d.chunks;
+        document.getElementById('sI').textContent=d.images+' images';document.getElementById('sTm').textContent=d.time+'s';
+        info.classList.add('on');drop.style.display='block';drop.classList.add('done');
         const img=d.images>0?` · ${d.images} images`:'';
-        document.getElementById('dropText').innerHTML=
-            `<h3>✅ ${d.filename}</h3><p>${d.pages} pages · ${d.chunks} chunks${img} · Drop another file to replace</p>`;
+        document.getElementById('dropText').innerHTML=`<h3>✅ ${d.filename}</h3><p>${d.pages} pages · ${d.chunks} chunks${img} · Drop another file to replace</p>`;
         qi.disabled=false;ab.disabled=false;qi.focus();
-    }catch(e){uld.classList.remove('on');drop.style.display='block';showErr('Upload failed: '+e.message)}
-}
-
+    }catch(e){uld.classList.remove('on');drop.style.display='block';showErr('Failed: '+e.message)}}
 qi.addEventListener('keydown',e=>{if(e.key==='Enter'&&!ab.disabled)doAsk()});
-
-async function doAsk(){
-    const q=qi.value.trim();if(!q)return;
-    hideErr();ab.disabled=true;qi.disabled=true;ald.classList.add('on');
-    try{
-        const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})}),
-              d=await r.json();
-        ald.classList.remove('on');ab.disabled=false;qi.disabled=false;
-        if(d.error){showErr(d.error);return}
-        render(d);qi.value='';qi.focus();
-    }catch(e){ald.classList.remove('on');ab.disabled=false;qi.disabled=false;showErr(e.message)}
-}
-
-function render(d){
-    const w=document.createElement('div');
+async function doAsk(){const q=qi.value.trim();if(!q)return;hideErr();ab.disabled=true;qi.disabled=true;ald.classList.add('on');
+    try{const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})}),d=await r.json();
+        ald.classList.remove('on');ab.disabled=false;qi.disabled=false;if(d.error){showErr(d.error);return}render(d);qi.value='';qi.focus();
+    }catch(e){ald.classList.remove('on');ab.disabled=false;qi.disabled=false;showErr(e.message)}}
+function render(d){const w=document.createElement('div');
     if(res.children.length)w.innerHTML+='<hr class="divider">';
     w.innerHTML+=`<div style="margin-bottom:10px;color:var(--text2);font-size:13px"><strong style="color:var(--text)">Q:</strong> ${esc(d.question)}</div>`;
     w.innerHTML+=`<div class="acard"><div class="top"><span class="lbl">Answer</span><span class="lat">${d.latency}s</span></div><div class="body">${esc(d.answer)}</div></div>`;
     let sh=`<div class="scard"><div class="shdr">Sources (${d.sources.length})</div>`;
-    d.sources.forEach(s=>{
-        const im=s.has_image;
-        sh+=`<div class="si${im?' img':''}"><div class="meta"><span class="badge${im?' ib':''}">${im?'🖼️ ':''}Source ${s.source_num}</span><span class="cite">${esc(s.citation)}</span></div><div class="stxt">${esc(s.text)}</div></div>`;
-    });
+    d.sources.forEach(s=>{const im=s.has_image;sh+=`<div class="si${im?' img':''}"><div class="meta"><span class="badge${im?' ib':''}">${im?'🖼️ ':''}Source ${s.source_num}</span><span class="cite">${esc(s.citation)}</span></div><div class="stxt">${esc(s.text)}</div></div>`});
     w.innerHTML+=sh+'</div>';
     w.innerHTML+=`<div class="usage"><span>Prompt: ${d.usage.prompt_tokens} tok</span><span>Completion: ${d.usage.completion_tokens} tok</span></div>`;
-    res.prepend(w);
-}
-
+    res.prepend(w)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function showErr(m){err.textContent=m;err.classList.add('on')}
 function hideErr(){err.classList.remove('on')}

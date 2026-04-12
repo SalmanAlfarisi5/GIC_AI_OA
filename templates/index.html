@@ -71,7 +71,7 @@
         <div class="formats"><span>PDF</span><span>DOCX</span><span>TXT</span><span>Markdown</span></div>
     </div>
     <div class="drop" id="drop">
-        <div id="dropText"><div class="ico">📄</div><h3>Drop a file here or click to upload</h3><p>PDF, DOCX, TXT, or Markdown — up to 100 MB · Images extracted from PDF &amp; DOCX</p></div>
+        <div id="dropText"><div class="ico">📄</div><h3>Drop a file here or click to upload</h3><p>PDF, DOCX, TXT, or Markdown — up to 100 MB</p></div>
         <input type="file" id="fi" accept=".pdf,.docx,.txt,.md">
     </div>
     <div class="ld" id="uld"><div class="spin"></div><p>Processing document...</p></div>
@@ -83,12 +83,13 @@
         <div class="s">Chunks: <span class="v" id="sC">—</span></div>
         <div class="s">🖼️ <span class="v" id="sI">—</span></div>
         <div class="s">⏱️ <span class="v" id="sTm">—</span></div>
+        <div class="s">🔄 Re-ranker: <span class="v" id="sR">—</span></div>
     </div>
     <div class="qbox">
         <input type="text" id="qi" placeholder="Ask a question about the document..." disabled autocomplete="off">
         <button class="btn" id="ab" disabled onclick="doAsk()">Ask</button>
     </div>
-    <div class="ld" id="ald"><div class="spin"></div><p>Retrieving and generating answer...</p></div>
+    <div class="ld" id="ald"><div class="spin"></div><p>Retrieving, re-ranking, and generating answer...</p></div>
     <div id="res"></div>
 </div>
 <script>
@@ -107,6 +108,7 @@ async function doUpload(f){
         document.getElementById('sF').textContent=d.filename;document.getElementById('sT').textContent=d.file_type.toUpperCase();
         document.getElementById('sP').textContent=d.pages;document.getElementById('sC').textContent=d.chunks;
         document.getElementById('sI').textContent=d.images+' images';document.getElementById('sTm').textContent=d.time+'s';
+        document.getElementById('sR').textContent=d.reranker==='on'?'ON':'OFF';
         info.classList.add('on');drop.style.display='block';drop.classList.add('done');
         const img=d.images>0?` · ${d.images} images`:'';
         document.getElementById('dropText').innerHTML=`<h3>✅ ${d.filename}</h3><p>${d.pages} pages · ${d.chunks} chunks${img} · Drop another file to replace</p>`;
@@ -120,7 +122,8 @@ async function doAsk(){const q=qi.value.trim();if(!q)return;hideErr();ab.disable
 function render(d){const w=document.createElement('div');
     if(res.children.length)w.innerHTML+='<hr class="divider">';
     w.innerHTML+=`<div style="margin-bottom:10px;color:var(--text2);font-size:13px"><strong style="color:var(--text)">Q:</strong> ${esc(d.question)}</div>`;
-    w.innerHTML+=`<div class="acard"><div class="top"><span class="lbl">Answer</span><span class="lat">${d.latency}s</span></div><div class="body">${esc(d.answer)}</div></div>`;
+    const rr=d.reranked?' · re-ranked':'';
+    w.innerHTML+=`<div class="acard"><div class="top"><span class="lbl">Answer</span><span class="lat">${d.latency}s${rr}</span></div><div class="body">${esc(d.answer)}</div></div>`;
     let sh=`<div class="scard"><div class="shdr">Sources (${d.sources.length})</div>`;
     d.sources.forEach(s=>{const im=s.has_image;sh+=`<div class="si${im?' img':''}"><div class="meta"><span class="badge${im?' ib':''}">${im?'🖼️ ':''}Source ${s.source_num}</span><span class="cite">${esc(s.citation)}</span></div><div class="stxt">${esc(s.text)}</div></div>`});
     w.innerHTML+=sh+'</div>';

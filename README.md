@@ -12,14 +12,14 @@ Query
 ┌──────────────────────────────────────┐
 │  Stage 1: RECALL                     │
 │  FAISS (semantic) + BM25 (keyword)   │
-│  → RRF Fusion → top 20 candidates   │
+│  → RRF Fusion → top 20 candidates    │
 └──────────────┬───────────────────────┘
                │
                ▼
 ┌──────────────────────────────────────┐
 │  Stage 2: PRECISION                  │
 │  Cross-Encoder Re-Ranker             │
-│  ms-marco-MiniLM-L-6-v2             │
+│  ms-marco-MiniLM-L-6-v2              │
 │  → top 6 passages                    │
 └──────────────┬───────────────────────┘
                │
@@ -91,8 +91,6 @@ jupyter notebook document_qa_system.ipynb
 ├── document_qa_system.ipynb   # Full pipeline + benchmark
 ├── requirements.txt
 ├── README.md
-├── code_walkthrough.md        # Line-by-line code explanation
-├── interview_prep.md          # 37 technical interview Q&As
 └── results.md                 # Generated after benchmark
 ```
 
@@ -111,3 +109,4 @@ jupyter notebook document_qa_system.ipynb
 3. Iterative retrieval for multi-hop questions
 4. Query decomposition for complex questions
 5. Confidence scoring to flag uncertain answers
+6. Try ColPali framework (State of the art methodology)

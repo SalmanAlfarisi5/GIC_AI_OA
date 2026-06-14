@@ -1,5 +1,10 @@
 # Document Q&A System — Evaluation Results
 
+> **Note:** These are the **pre-upgrade baseline** scores (caption-only retrieval,
+> no images at answer time). To measure the multimodal upgrades — #1 images fed to
+> the model at answer time and #2 CLIP visual retrieval — run `python eval_compare.py`,
+> which produces a side-by-side `comparison_results.md`.
+
 **Generated:** 2026-04-05 20:33:51
 **Benchmark:** FinanceBench (open-source subset)
 **Documents evaluated:** 4

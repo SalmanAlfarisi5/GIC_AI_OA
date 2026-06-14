@@ -2,3 +2,6 @@
 *.pdf
 *.pyc
 __pycache__/
+.caption_cache.json
+space/samples/caption_cache.json
+comparison_results.json
